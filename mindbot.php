@@ -58,6 +58,7 @@ class Node implements JsonSerializable{
  private $title = "";
  private $id = "";
  private $ideas = [];
+ private static $rank = "1";
 
  public function __construct($title, $id) {
 	$this->title = $title;
@@ -66,7 +67,7 @@ class Node implements JsonSerializable{
  }
 
  public function add($nodo){
-	$this->ideas[] = $nodo;
+	$this->ideas[Node::$rank++] = $nodo;
  }
 
     // function called when encoded with json_encode
