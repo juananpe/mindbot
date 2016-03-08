@@ -91,15 +91,27 @@ $nodo->add(new Node("geo", $index++)); // añadir hijo geo al nodo canvas
 $db = new DB();
 $results = $db->getQuestionsResults(1); // for quiz 1
 
+// die(print_r($results, 1));
+
 $title = $db->getQuizTitle(1);
 
 // echo "Quiz: " . $title . "\n";
 
 $nodo = new Node($title, $index++);
 
+
+$colors = ["red" => "#ff0000", "orange" => "#ff9900", "green" => "#99cc00"];
 foreach($results as $result){
 	$questionNode = new Node("question" . $result->question, $index++);
-	$questionNode->attr = json_decode('{ "measurements" : { "ejerciciosOK": "' . $result->respOK  . '", "ejerciciosKO": "' . $result->respKO . '"} , "style":{} } ');
+	$ratio = $result->respOK / max($result->respKO,1);
+	if ($ratio >= 0.75)
+		$style = $colors["green"];
+	elseif ($ratio >= 0.5)
+		$style = $colors["orange"];
+	else
+		$style = $colors["red"];	
+
+	$questionNode->attr = json_decode('{ "measurements" : { "respOK": "' . $result->respOK  . '", "respKO": "' . $result->respKO . '"} , "style":{ "background": "'. $style .'" } } ');
 	$nodo->add($questionNode);
 }
 
