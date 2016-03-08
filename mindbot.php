@@ -41,9 +41,13 @@ class DB {
 			";
                 $results = $this->conn->_multipleSelect($sql, $quiz);
                 // error_log(print_r($row, 1), 3, "/tmp/error.log");
-		foreach($results as $result){
-			echo $result->respOK  . " " . $result->respKO . " " . $result->question . " " . $result->quiz . "\n";
-		}
+		return $results;
+	}
+
+	public function getQuizTitle($quiz){
+		$sql = " select description from quiz where id = %d";
+		$result = $this->conn->_singleSelect($sql, $quiz);
+		return $result->description;
 	}
 
 }
@@ -80,11 +84,27 @@ $root->formatVersion = 2;
 $root->attr = json_decode('{ "measurements-config": [ "respOK", "respKO" ], "style": {} }');
 
 $nodo = new Node("canvas", $index++);
-$nodo->add(new Node("geo", $index++));
+$nodo->add(new Node("geo", $index++)); // añadir hijo geo al nodo canvas
+
+
+$db = new DB();
+$results = $db->getQuestionsResults(1); // for quiz 1
+
+$title = $db->getQuizTitle(1);
+
+// echo "Quiz: " . $title . "\n";
+
+$nodo = new Node($title, $index++);
+
+foreach($results as $result){
+	$questionNode = new Node("question" . $result->question, $index++);
+	$questionNode->attr = json_decode('{ "measurements" : { "ejerciciosOK": "' . $result->respOK  . '", "ejerciciosKO": "' . $result->respKO . '"} , "style":{} } ');
+	$nodo->add($questionNode);
+}
 
 $root->add($nodo);
 
-print_r(json_encode($root));
+print_r(json_encode($root) . "\n");
 
-$db = new DB();
-$db->getQuestionsResults(1); // for quiz 1
+
+
