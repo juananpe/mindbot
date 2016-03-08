@@ -50,6 +50,12 @@ class DB {
 		return $result->description;
 	}
 
+	public function getNumQuizes(){
+
+		$sql = "select count(*) as numQuizes from quiz";
+		$result = $this->conn->_singleSelect($sql);
+		return $result->numQuizes;
+	}
 }
 
 
@@ -58,7 +64,8 @@ class Node implements JsonSerializable{
  private $title = "";
  private $id = "";
  private $ideas = [];
- private static $rank = "1";
+ public static $sign = "+1";
+ public static $rank = "1";
 
  public function __construct($title, $id) {
 	$this->title = $title;
@@ -67,7 +74,7 @@ class Node implements JsonSerializable{
  }
 
  public function add($nodo){
-	$this->ideas[Node::$rank++] = $nodo;
+	$this->ideas[Node::$sign * Node::$rank++] = $nodo;
  }
 
     // function called when encoded with json_encode
@@ -84,23 +91,27 @@ $root = new Node("DAWE", $index++);
 $root->formatVersion = 2;
 $root->attr = json_decode('{ "measurements-config": [ "respOK", "respKO" ], "style": {} }');
 
-$nodo = new Node("canvas", $index++);
-$nodo->add(new Node("geo", $index++)); // añadir hijo geo al nodo canvas
+# $nodo = new Node("canvas", $index++);
+# $nodo->add(new Node("geo", $index++)); // añadir hijo geo al nodo canvas
 
+
+$colors = ["red" => "#ff0000", "orange" => "#ff9900", "green" => "#99cc00"];
 
 $db = new DB();
-$results = $db->getQuestionsResults(1); // for quiz 1
 
-// die(print_r($results, 1));
+$numQuizes = $db->getNumQuizes();
 
-$title = $db->getQuizTitle(1);
+for($quizInd =1; $quizInd<=$numQuizes; $quizInd++) {
 
-// echo "Quiz: " . $title . "\n";
+
+$results = $db->getQuestionsResults($quizInd); 
+
+$title = $db->getQuizTitle($quizInd);
+// print_r($title . "\n");
 
 $nodo = new Node($title, $index++);
 
 
-$colors = ["red" => "#ff0000", "orange" => "#ff9900", "green" => "#99cc00"];
 foreach($results as $result){
 	$questionNode = new Node("question" . $result->question, $index++);
 	$ratio = $result->respOK / max($result->respKO,1);
@@ -116,8 +127,8 @@ foreach($results as $result){
 }
 
 $root->add($nodo);
+Node::$sign *= -1;
+}
 
 print_r(json_encode($root) . "\n");
-
-
 
