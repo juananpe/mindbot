@@ -61,27 +61,27 @@ class DB {
 
 class Node implements JsonSerializable{
 
- private $title = "";
- private $id = "";
- private $ideas = [];
- public static $sign = "+1";
- public static $rank = "1";
+	private $title = "";
+	private $id = "";
+	private $ideas = [];
+	public static $sign = "+1";
+	public static $rank = "1";
 
- public function __construct($title, $id) {
-	$this->title = $title;
-	$this->id = $id;
-	$this->ideas = [];
- }
+	public function __construct($title, $id) {
+		$this->title = $title;
+		$this->id = $id;
+		$this->ideas = [];
+	}
 
- public function add($nodo){
-	$this->ideas[Node::$sign * Node::$rank++] = $nodo;
- }
+	public function add($nodo){
+		$this->ideas[Node::$sign * Node::$rank++] = $nodo;
+	}
 
-    // function called when encoded with json_encode
-    public function jsonSerialize()
-    {
-        return get_object_vars($this);
-    }
+	// function called when encoded with json_encode
+	public function jsonSerialize()
+	{
+		return get_object_vars($this);
+	}
 
 }
 
@@ -104,30 +104,30 @@ $numQuizes = $db->getNumQuizes();
 for($quizInd =1; $quizInd<=$numQuizes; $quizInd++) {
 
 
-$results = $db->getQuestionsResults($quizInd); 
+	$results = $db->getQuestionsResults($quizInd); 
 
-$title = $db->getQuizTitle($quizInd);
-// print_r($title . "\n");
+	$title = $db->getQuizTitle($quizInd);
+	// print_r($title . "\n");
 
-$nodo = new Node($title, $index++);
+	$nodo = new Node($title, $index++);
 
 
-foreach($results as $result){
-	$questionNode = new Node("question" . $result->question, $index++);
-	$ratio = $result->respOK / max($result->respKO,1);
-	if ($ratio >= 0.75)
-		$style = $colors["green"];
-	elseif ($ratio >= 0.5)
-		$style = $colors["orange"];
-	else
-		$style = $colors["red"];	
+	foreach($results as $result){
+		$questionNode = new Node("question" . $result->question, $index++);
+		$ratio = $result->respOK / max($result->respKO,1);
+		if ($ratio >= 0.75)
+			$style = $colors["green"];
+		elseif ($ratio >= 0.5)
+			$style = $colors["orange"];
+		else
+			$style = $colors["red"];	
 
-	$questionNode->attr = json_decode('{ "measurements" : { "respOK": "' . $result->respOK  . '", "respKO": "' . $result->respKO . '"} , "style":{ "background": "'. $style .'" } } ');
-	$nodo->add($questionNode);
-}
+		$questionNode->attr = json_decode('{ "measurements" : { "respOK": "' . $result->respOK  . '", "respKO": "' . $result->respKO . '"} , "style":{ "background": "'. $style .'" } } ');
+		$nodo->add($questionNode);
+	}
 
-$root->add($nodo);
-Node::$sign *= -1;
+	$root->add($nodo);
+	Node::$sign *= -1;
 }
 
 print_r(json_encode($root) . "\n");
